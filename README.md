@@ -1,8 +1,10 @@
-# yank
+# ya
 
-A minimal Wayland clipboard copy tool written in C. It takes text from an argument or stdin and puts it on the clipboard via the `ext-data-control-v1` protocol.
+A minimal Wayland clipboard copy tool written in C. It takes data from an argument or stdin and puts it on the clipboard via the `ext-data-control-v1` protocol.
 
-After setting the selection, yank forks into the background and serves paste requests until another client takes over the clipboard.
+Data of any size can be yanked: input from stdin is read into a buffer that grows as needed, so you can copy anything from a single word to large files.
+
+After setting the selection, ya forks into the background and serves paste requests until another client takes over the clipboard.
 
 ## Requirements
 
@@ -15,21 +17,25 @@ After setting the selection, yank forks into the background and serves paste req
 ./build.sh
 ```
 
-This compiles the binary to `dist/main`.
-
 ## Usage
+
+```
+ya TEXT
+ya < FILE
+COMMAND | ya
+```
 
 Copy an argument:
 
 ```sh
-./dist/main "hello world"
+ya "hello world"
 ```
 
 Copy from stdin:
 
 ```sh
-echo "hello world" | ./dist/main
-cat file.txt | ./dist/main
+echo "hello world" | ya
+ya < file.txt
 ```
 
 Paste with your usual shortcut, or check with `wl-paste`.
@@ -45,5 +51,5 @@ Paste with your usual shortcut, or check with `wl-paste`.
 To log the Wayland protocol messages:
 
 ```sh
-WAYLAND_DEBUG=1 ./dist/main "hello"
+WAYLAND_DEBUG=1 ya "hello"
 ```
