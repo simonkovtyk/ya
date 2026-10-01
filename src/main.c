@@ -44,8 +44,22 @@ static const struct ext_data_control_source_v1_listener src_listener = {
 };
 
 int main (int argc, char **argv) {
-  if (argc > 1) {
-    data = argv[1];
+  const char *mime = NULL;
+  int opt;
+
+  while ((opt = getopt(argc, argv, "t:")) != -1) {
+    switch (opt) {
+      case 't':
+        mime = optarg;
+        break;
+      default:
+        fprintf(stderr, "usage: ya [-t MIME] [TEXT]\n");
+        return 1;
+    }
+  }
+
+  if (optind < argc) {
+    data = argv[optind];
     data_len = strlen(data);
   } else if (!isatty(STDIN_FILENO)) {
     size_t buf_cap = 1024 * 1024 * 16;
@@ -65,7 +79,7 @@ int main (int argc, char **argv) {
     data = buf;
 
   } else {
-    fprintf(stderr, "usage: ya [-t MIME] < FILE\n");
+    fprintf(stderr, "usage: ya [-t MIME] [TEXT]\n");
     return 1;
   }
 
@@ -86,11 +100,15 @@ int main (int argc, char **argv) {
   struct ext_data_control_source_v1 *src = ext_data_control_manager_v1_create_data_source(manager);
 
   ext_data_control_source_v1_add_listener(src, &src_listener, NULL);
-  ext_data_control_source_v1_offer(src, "UTF8_STRING");
-  ext_data_control_source_v1_offer(src, "STRING");
-  ext_data_control_source_v1_offer(src, "TEXT");
-  ext_data_control_source_v1_offer(src, "text/plain;charset=utf-8");
-  ext_data_control_source_v1_offer(src, "text/plain");
+  if (mime) {
+    ext_data_control_source_v1_offer(src, mime);
+  } else {
+    ext_data_control_source_v1_offer(src, "UTF8_STRING");
+    ext_data_control_source_v1_offer(src, "STRING");
+    ext_data_control_source_v1_offer(src, "TEXT");
+    ext_data_control_source_v1_offer(src, "text/plain;charset=utf-8");
+    ext_data_control_source_v1_offer(src, "text/plain");
+  }
   ext_data_control_device_v1_set_selection(dev, src);
   wl_display_roundtrip(dpy);
 
